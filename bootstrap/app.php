@@ -32,7 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 . ', IP: ' . $request->ip()
                 . ', User Agent: ' . $request->userAgent());
 
-            return redirect()->route('homepage')->with('error', 'Non autorizzato');
+            return redirect(route('homepage'))->with('error', 'Not Authorized');
         });
 
         $exceptions->render(function (TokenMismatchException $e, Request $request) {
@@ -43,7 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 . ', User Agent: ' . $request->userAgent()
             );
 
-            return redirect()->route('homepage')->with('error', 'Non autorizzato');
+            return redirect(route('homepage'))->with('error', 'Not Authorized');
         });
     })
     ->create();
