@@ -76,6 +76,14 @@ class ArticleController extends Controller implements HasMiddleware
             $article->tags()->attach($newTag);
         }
 
+        Log::info(
+            'Article created: ' . $article->title 
+            . ' with id ' . $article->id 
+            . ' by user: ' . Auth::user()->email 
+            . ' at ' . now() 
+            . ' from IP: ' . request()->ip()
+        );
+
         return redirect(route('homepage'))->with('message', 'Articolo creato con successo');
     }
 
@@ -93,6 +101,12 @@ class ArticleController extends Controller implements HasMiddleware
     public function edit(Article $article)
     {
         if(Auth::user()->id != $article->user_id){
+            Log::critical(
+                'Unauthorized edit attempt: Article ID ' . $article->id 
+                . ' by user: ' . Auth::user()->email 
+                . ' at ' . now() 
+                . ' from IP: ' . request()->ip()
+            );
             return redirect()->route('homepage')->with('alert', 'Accesso non consentito');
         }
         return view('articles.edit', compact('article'));
@@ -143,6 +157,14 @@ class ArticleController extends Controller implements HasMiddleware
         }
         $article->tags()->sync($newTags);
 
+        Log::info(
+            'Article updated: ' . $article->title 
+            . ' with id ' . $article->id 
+            . ' by user: ' . Auth::user()->email 
+            . ' at ' . now() 
+            . ' from IP: ' . request()->ip()
+        );
+
         return redirect(route('writer.dashboard'))->with('message', 'Articolo modificato con successo');
     }
 
@@ -155,6 +177,14 @@ class ArticleController extends Controller implements HasMiddleware
             $article->tags()->detach($tag);
         }
         $article->delete();
+        
+        Log::info(
+            'Article deleted: ' . $article->title 
+            . ' with id ' . $article->id 
+            . ' by user: ' . Auth::user()->email 
+            . ' at ' . now() 
+            . ' from IP: ' . request()->ip()
+        );
         
         return redirect()->back()->with('message', 'Articolo cancellato con successo');
     }

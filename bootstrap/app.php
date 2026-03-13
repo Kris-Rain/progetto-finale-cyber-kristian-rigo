@@ -27,17 +27,21 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (MethodNotAllowedHttpException $e, Request $request) {
-            Log::warning('Attempt not authorized: Method not allowed. Method: ' . $request->method()
+            Log::critical(
+                'Attempt not authorized: method not allowed.'
+                . ' Method: ' . $request->method()
                 . ', URL: ' . $request->fullUrl()
                 . ', IP: ' . $request->ip()
-                . ', User Agent: ' . $request->userAgent());
+                . ', User Agent: ' . $request->userAgent()
+            );
 
             return redirect(route('homepage'))->with('error', 'Not Authorized');
         });
 
         $exceptions->render(function (TokenMismatchException $e, Request $request) {
-            Log::warning(
-                'Attempt not authorized: CSRF token mismatch. Method: ' . $request->method()
+            Log::critical(
+                'Attempt not authorized: CSRF token mismatch.'
+                . ' Method: ' . $request->method()
                 . ', URL: ' . $request->fullUrl()
                 . ', IP: ' . $request->ip()
                 . ', User Agent: ' . $request->userAgent()

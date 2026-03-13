@@ -48,6 +48,7 @@ class AdminController extends Controller
         } catch (Exception $e) {
             // Gestisci l'eccezione
             echo 'Errore: ' . $e->getMessage();
+            Log::error("Errore nella richiesta HTTP: " . $e->getMessage());
             // Puoi anche registrare l'errore in un log file o eseguire altre azioni di recupero
         }
         
@@ -58,6 +59,8 @@ class AdminController extends Controller
         $user->is_admin = true;
         $user->save();
 
+        Log::info("User $user->email has been promoted to admin at ".now()." from ".request()->ip(). " by ".Auth::user()->email);
+
         return redirect(route('admin.dashboard'))->with('message', "$user->name is now administrator");
     }
 
@@ -65,12 +68,16 @@ class AdminController extends Controller
         $user->is_revisor = true;
         $user->save();
 
+        Log::info("User $user->email has been promoted to revisor at ".now()." from ".request()->ip(). " by ".Auth::user()->email);
+
         return redirect(route('admin.dashboard'))->with('message', "$user->name is now revisor");
     }
 
     public function setWriter(User $user){
         $user->is_writer = true;
         $user->save();
+
+        Log::info("User $user->email has been promoted to writer at ".now()." from ".request()->ip(). " by ".Auth::user()->email);
 
         return redirect(route('admin.dashboard'))->with('message', "$user->name is now writer");
     }

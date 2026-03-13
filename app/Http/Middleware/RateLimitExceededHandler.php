@@ -19,8 +19,10 @@ class RateLimitExceededHandler
 
         // Controlla se l'IP è già bloccato e restituisce un messaggio di errore
         if (Cache::has($blockedKey)) {
-            Log::warning("Blocked IP: " . $ip
-                . " attempted access on path: " . $request->path());
+            Log::critical(
+                'Blocked IP: ' . $ip
+                . ' attempted access on path: ' . $request->path()
+            );
             $message = "Your IP has been blocked for {$this->blockDurationMinutes} minute(s) due to too many requests.";
 
             if ($request->expectsJson()) {
@@ -32,13 +34,15 @@ class RateLimitExceededHandler
         $response = $next($request);
 
         // Se riceve 429, blocca subito l'IP
-        if ($response->status() === 429) {
+        if ($response->getStatusCode() === 429) {
             Cache::put($blockedKey, true, now()->addMinutes($this->blockDurationMinutes));
 
-            Log::warning("Rate limit exceeded - IP: " . $ip
-                . " blocked for " . $this->blockDurationMinutes
-                . " minute(s) - Path: " . $request->path()
-                . " - Method: " . $request->method());
+            Log::critical(
+                'Rate limit exceeded - IP: ' . $ip
+                . ' blocked for ' . $this->blockDurationMinutes
+                . ' minute(s) - Path: ' . $request->path()
+                . ' - Method: ' . $request->method()
+            );
         }
         return $response;
     }
