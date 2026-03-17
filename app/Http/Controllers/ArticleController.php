@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
+use App\Services\HtmlFilterService;
 
 class ArticleController extends Controller implements HasMiddleware
 {
@@ -42,7 +43,7 @@ class ArticleController extends Controller implements HasMiddleware
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, HtmlFilterService $htmlFilterService)
     {
         $request->validate([
             'title' => 'required|unique:articles|min:5',
@@ -53,10 +54,13 @@ class ArticleController extends Controller implements HasMiddleware
             'tags' => 'required'
         ]);
 
+        // Filtra il body prima del salvataggio (mitigazione stored XSS)
+        $cleanBody = $htmlFilterService->filterHtml($request->body);
+
         $article = Article::create([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
-            'body' => $request->body,
+            'body' => $cleanBody,
             'image' => $request->file('image')->store('public/images'),
             'category_id' => $request->category,
             'user_id' => Auth::user()->id,
@@ -90,8 +94,14 @@ class ArticleController extends Controller implements HasMiddleware
     /**
      * Display the specified resource.
      */
-    public function show(Article $article)
+    public function show(Article $article, HtmlFilterService $htmlFilterService, Request $request)
     {
+        $article->body = $htmlFilterService->filterHtml($article->body);
+
+        if ($request->wantsJson()) {
+            return response()->json($article);
+        }
+
         return view('articles.show', compact('article'));
     }
 
@@ -100,7 +110,7 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function edit(Article $article)
     {
-        if(Auth::user()->id != $article->user_id){
+        if(Auth::user()->id != $article->user_id && !Auth::user()->is_admin){
             Log::critical(
                 'Unauthorized edit attempt: Article ID ' . $article->id 
                 . ' by user: ' . Auth::user()->email 
@@ -115,8 +125,18 @@ class ArticleController extends Controller implements HasMiddleware
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Article $article)
+    public function update(Request $request, Article $article, HtmlFilterService $htmlFilterService)
     {
+        if(Auth::user()->id != $article->user_id && !Auth::user()->is_admin){
+            Log::critical(
+                'Unauthorized update attempt: Article ID ' . $article->id 
+                . ' by user: ' . Auth::user()->email 
+                . ' at ' . now() 
+                . ' from IP: ' . request()->ip()
+            );
+            return redirect()->route('homepage')->with('alert', 'Accesso non consentito');
+        }
+
         $request->validate([
             'title' => 'required|min:5|unique:articles,title,' . $article->id,
             'subtitle' => 'required|min:5',
@@ -126,10 +146,13 @@ class ArticleController extends Controller implements HasMiddleware
             'tags' => 'required'
         ]);
 
+        // Filtra il body prima del salvataggio (mitigazione stored XSS)
+        $cleanBody = $htmlFilterService->filterHtml($request->body);
+
         $article->update([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
-            'body' => $request->body,
+            'body' => $cleanBody,
             'category_id' => $request->category,
             'slug' => Str::slug($request->title),
         ]);
