@@ -6,6 +6,7 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\WriterController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\RevisorController;
+use App\Http\Controllers\UserController;
 
 Route::middleware('throttle:global')->group(function () {
 
@@ -19,6 +20,11 @@ Route::middleware('throttle:global')->group(function () {
     Route::get('/articles/category/{category}', [ArticleController::class, 'byCategory'])->name('articles.byCategory');
     Route::get('/articles/user/{user}', [ArticleController::class, 'byUser'])->name('articles.byUser');
     Route::get('/articles/search', [ArticleController::class, 'articleSearch'])->middleware('throttle:strict')->name('articles.search');
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [UserController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [UserController::class, 'update'])->name('profile.update');
+    });
 
     // Writer routes
     Route::middleware('writer')->group(function () {

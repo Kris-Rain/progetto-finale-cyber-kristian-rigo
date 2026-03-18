@@ -10,7 +10,7 @@ class LatestNews extends Component
 {
     public $selectedApi;
     public $news;
-    protected $httpService;
+    protected HttpService $httpService;
 
     // niente URL liberi dal client: solo alias controllati
     private array $apiMap = [
