@@ -26,6 +26,11 @@ Route::middleware('throttle:global')->group(function () {
         Route::patch('/profile', [UserController::class, 'update'])->name('profile.update');
     });
 
+    // Bonus: clickjacking demo
+    // Route::get('/bonus/clickjack', function () {
+    //    return view('bonus.clickjack');
+    // })->name('bonus.clickjack');
+
     // Writer routes
     Route::middleware('writer')->group(function () {
         Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create');

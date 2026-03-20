@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function edit()
+    public function edit(Request $request)
     {
+        Gate::authorize('update', $request->user());
+
         return view('profile.edit');
     }
 
     public function update(Request $request)
     {
+        Gate::authorize('update', $request->user());
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $request->user()->id],

@@ -26,7 +26,7 @@
                 </div>
                 <hr>
                 <p>{!!$article->body!!}</p>
-                @if (Auth::user() && Auth::user()->is_revisor && !$article->is_accepted)
+                @can ('accept_reject', $article)
                     <div class="container my-5">
                         <div class="row">
                             <div class="col-12 d-flex justify-content-evenly">
@@ -41,7 +41,7 @@
                             </div>
                         </div>
                     </div>
-                @endif
+                @endcan
                 <div class="text-center">
                     <a href="{{route('articles.index')}}" class="text-secondary">Go to article list</a>
                 </div>

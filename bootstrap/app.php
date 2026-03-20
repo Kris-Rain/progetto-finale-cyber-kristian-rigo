@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(RateLimitExceededHandler::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
         $middleware->alias([
             'admin' => App\Http\Middleware\UserIsAdmin::class,
